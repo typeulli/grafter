@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafter</title>
+    <link rel="icon" type="image/x-icon" href="grafter.ico">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <script async src="sortable.min.js" onload="window.Sortable.create(document.getElementById('graphs'),{ animation: 150, draggable: 'div'})"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .title {
+            color: #222;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: normal;
+        }
+
+        .sidebar {
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: solid 1px;
+            border-color: #eee;
+            gap: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .running-options-selections {
+            display: flex;
+            padding: 8px 10px;
+            align-items: center;
+            gap: 5px;
+            align-self: stretch;
+            color: #222;
+            font-family: Pretendard;
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
+            border-radius: 8px;
+            border: 1px solid #EEE;
+            background: #FFF;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .scale-options-div {
+            width: 260px; 
+            height: 28px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body style="display: flex; width: 100%; height: 100%; padding: 0px;">
+    <script>
+        async function API_getGrafterDevices() {
+            if (window.__bind_getGrafterDevices) {
+                return await window.__bind_getGrafterDevices();
+            }
+            const response = await fetch("/devices");
+            return await response.json();
+        }
+
+        async function API_showConfirm(message) {
+            return new Promise((resolve) => {
+                const confirm = window.confirm(message);
+                resolve(confirm);
+            });
+        }
+
+        async function API_callGrafter(body) {
+            if (window.__bind_callGrafter) {
+                var s= await window.__bind_callGrafter(JSON.stringify(body));
+                return s.data;
+            }
+
+            return fetch("/draw", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(async response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const arr = await response.arrayBuffer();
+                const blob = new Blob([arr], { type: 'image/png' });
+                return URL.createObjectURL(blob);
+            }).catch(error => {
+                console.error('Error calling Grafter API:', error);
+                throw error;
+            });
+        }
+
+        async function selectGrafterPath() {
+
+            var devices = await API_getGrafterDevices();
+            document.getElementById('grafterDeviceSelect').innerHTML = '';
+            for (const [category, deviceList] of Object.entries(devices)) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = category;
+                Object.entries(deviceList).forEach(([id, description]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = description;
+                    optGroup.appendChild(option);
+                });
+                document.getElementById('grafterDeviceSelect').appendChild(optGroup);
+            }
+            
+        }
+
+
+
+
+        window.onload = () => {
+            selectGrafterPath();
+        }
+        window.addGraphInput = () => {
+            const graphsDiv = document.getElementById('graphs');
+            
+            const inputDiv = document.createElement('div');
+            inputDiv.style.display = 'flex';
+            inputDiv.style.flexDirection = 'row';
+            inputDiv.style.alignItems = 'center';
+            inputDiv.style.gap = '6px';
+            
+            const isGraphCheckbox = document.createElement('input');
+            isGraphCheckbox.type = 'checkbox';
+            isGraphCheckbox.checked = true;
+            isGraphCheckbox.onchange = function() {
+                const colorInput = this.parentNode.querySelector('input[type="color"]');
+                colorInput.style.display = this.checked ? 'block' : 'none';
+            };
+            inputDiv.appendChild(isGraphCheckbox);
+
+            const graphColor = document.createElement('input');
+            graphColor.type = 'color';
+            graphColor.value = '#8800FF';
+            graphColor.style.width = '30px';
+            graphColor.style.height = '30px';
+            graphColor.style.border = 'none';
+            graphColor.style.borderRadius = '50%';
+            graphColor.style.padding = '0';
+            graphColor.style.overflow = 'hidden';
+            inputDiv.appendChild(graphColor);
+
+            const inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.placeholder = 'Enter graph formula';
+            inputField.style.height = 'fit-content';
+            inputField.style.flexGrow = '1';
+            inputField.style.borderRadius = '8px';
+            inputField.style.padding = '10px 8px';
+            inputField.style.border = '1px solid #ccc';
+            inputDiv.appendChild(inputField);
+
+            const removeButton = document.createElement('div');
+            removeButton.style.cursor = 'pointer';
+            removeButton.style.marginLeft = 'auto';
+            removeButton.onclick = () => graphsDiv.removeChild(inputDiv);
+            
+            const removeButtonIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            removeButtonIcon.style.width = "16px";
+            removeButtonIcon.style.height = "16px";
+            removeButtonIcon.setAttribute("viewBox", "0 0 12 12");
+            removeButtonIcon.style.fill = "none";
+            removeButtonIcon.innerHTML = `
+<path d="M2 3.5H10" stroke="#999"/>
+<path d="M3 3.5V9.5C3 10.0523 3.44772 10.5 4 10.5H6H8C8.55228 10.5 9 10.0523 9 9.5V3.5" stroke="#999"/>
+<path d="M4 3V2.5C4 1.94772 4.44772 1.5 5 1.5H7C7.55228 1.5 8 1.94772 8 2.5V3" stroke="#999"/>
+<path d="M5 5V9" stroke="#999"/>
+<path d="M7 5V9" stroke="#999"/>`;
+            removeButtonIcon.onmouseover = (event) => {
+                [...event.target.children].map(e => e.style.stroke = 'red');
+            };
+            removeButtonIcon.onmouseout = (event) => {
+                [...event.target.children].map(e => e.style.stroke = '#999');
+            };
+            removeButton.appendChild(removeButtonIcon);
+            
+            inputDiv.appendChild(removeButton);
+
+            graphsDiv.insertBefore(inputDiv, graphsDiv.lastElementChild);
+        }
+        async function submit() {
+            const x_min = parseInt(document.getElementById('xMinInput').value);
+            const x_max = parseInt(document.getElementById('xMaxInput').value);
+            const y_min = parseInt(document.getElementById('yMinInput').value);
+            const y_max = parseInt(document.getElementById('yMaxInput').value);
+            const filePath = await API_callGrafter(
+                {
+                    "device": document.getElementById('grafterDeviceSelect').value.split("/")[0],
+                    "dtype": "real",
+                    "coord": document.getElementById('graphTypeSelect').value,
+                    "mats": [
+                        {
+                            "width": parseInt(document.getElementById('widthInput').value),
+                            "height": parseInt(document.getElementById('heightInput').value),
+                            "x_min": x_min, "x_max": x_max, "y_min": y_min, "y_max": y_max
+                        }
+                    ],
+                    "scalers": [
+                        {
+                            "type": "linspace",
+                            "start": x_min,
+                            "end": x_max,
+                            "cnt": 2000
+                        }, {
+                            "type": "linspace",
+                            "start": y_min,
+                            "end": y_max,
+                            "cnt": 2000
+                        }
+                    ],
+                    "graph": Array.from(document.querySelectorAll('#graphs > div'))
+                        .map(div => {
+                            const input = div.querySelector('input[type="text"]');
+                            const isGraph = div.querySelector('input[type="checkbox"]').checked;
+                            const color = div.querySelector('input[type="color"]').value;
+                            const r = parseInt(color.slice(1, 3), 16);
+                            const g = parseInt(color.slice(3, 5), 16);
+                            const b = parseInt(color.slice(5, 7), 16);
+                            if (isGraph) {
+                                return {
+                                    "type": "plot",
+                                    "mat": 0,
+                                    "color": [r, g, b],
+                                    "expr": input.value.trim().split("=")
+                                }
+                            } else {
+                                return {
+                                    "type": "var",
+                                    "name": input.value.trim().split("=")[0],
+                                    "expr": [ input.value.trim().split("=")[1] ]
+                                }
+                            }
+                        })
+                    }
+                )
+
+            const outputImage = document.getElementById('outputImage');
+            outputImage.src = filePath;
+            outputImage.style.display = 'block';
+            outputImage.onload = () => {
+                console.log('Image loaded successfully');
+            };
+        }
+    </script>
+
+    <div class="sidebar">
+
+        <p class="title">Running Options</p>
+        <select class="running-options-selections" id="grafterDeviceSelect" ></select>
+        <p class="title">Scale Options</p>
+        <div id="mats" style="display: flex; flex-direction: column;">
+            <div class="scale-options-div">
+                <label style="width: 54px; font-size: 13px;">Size:</label>
+                <input type="number" id="widthInput" value="1200" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3L9 9" stroke="black"/>
+                    <path d="M9 3L3 9" stroke="black"/>
+                </svg>
+                <input type="number" id="heightInput" value="1200" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+            </div>
+            <div class="scale-options-div">
+                <label style="width: 54px; font-size: 13px;">X Range: </label>
+                <input type="number" id="xMinInput" value="-10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.5 6.5L3 6C3.82843 5.17157 5.17157 5.17157 6 6V6V6C6.82843 6.82843 8.17157 6.82843 9 6L9.5 5.5" stroke="black" stroke-linecap="round"/>
+                </svg>
+                <input type="number" id="xMaxInput" value="10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+            </div>
+            <div class="scale-options-div">
+                <label style="width: 54px; font-size: 13px;">Y Range: </label>
+                <input type="number" id="yMinInput" value="-10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.5 6.5L3 6C3.82843 5.17157 5.17157 5.17157 6 6V6V6C6.82843 6.82843 8.17157 6.82843 9 6L9.5 5.5" stroke="black" stroke-linecap="round"/>
+                </svg>
+                <input type="number" id="yMaxInput" value="10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+            </div>
+            <div style="display: flex; width: 260px; height: 28px; align-items: center; gap: 8px;">
+                <p>Graph Type:</p>
+                <select id="graphTypeSelect" style="border: 1px solid #ddd; border-radius: 8px; padding: 4px;">
+                    <option value="rect">rect</option>
+                    <option value="polar">polar</option>
+                </select>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <p style="margin: 0px;">Graphs</p>         
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: auto;" onclick="addGraphInput()">
+                <path d="M2 6H10" stroke="black"/>
+                <path d="M6 2V10" stroke="black"/>
+            </svg>
+        </div>
+        <div id="graphs" style="display: flex; flex-direction: column;"></div>
+        <button id="submitButton" style="width: 100%; height: 34px; border-radius: 8px; background-color: black; color: white;" onclick="submit()">Apply</button>
+    </div>
+
+    <div style="flex-grow: 1;">
+        <img id="outputImage" src="" alt="Output will appear here" style="display:none; width: 100%; height: 100%;" />
+    </div>
+</body>
+</html>

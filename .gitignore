@@ -1,0 +1,7 @@
+cmake-build-*/
+
+temp/
+scripts/build/
+
+.idea/
+.vscode/
