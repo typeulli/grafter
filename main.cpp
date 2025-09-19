@@ -29,7 +29,7 @@ struct DeviceInfo {
     int ref;
 };
 extern DeviceInfo parseDevice(const string& deviceText);
-extern bool startServer(const string& host, int port, DeviceInfo device_default);
+extern bool startServer(const string& host, int port, DeviceInfo device_default, bool verbose);
 extern "C" void* extern_runJsonString(const char* jsonString, DeviceInfo defaultDevice);
 vector<cv::Mat> runJsonStringWrapper(const string& jsonString, DeviceInfo defaultDevice) {
     return *(vector<cv::Mat>*)extern_runJsonString(jsonString.c_str(), defaultDevice);
@@ -71,8 +71,18 @@ DWORD GetParentProcessID()
 #endif
 
 int main(int argc, char* argv[]) {
+#if defined(_WIN32) || defined(_WIN64)
+    HWND hWnd = GetConsoleWindow();
+    HWND hWndFore = GetForegroundWindow();
+    DWORD parentPID = GetParentProcessID();
+    DWORD fgPID;
+    GetWindowThreadProcessId(hWndFore, &fgPID);
+    if (hWndFore != nullptr && parentPID != fgPID) {
+        ShowWindow(hWnd, SW_HIDE);
+    }
+#endif
 
-    std::cout << "Using opencv version: " << CV_VERSION << std::endl;
+
 
     cxxopts::Options options("Grafter", "A graphing tool for mathematical formulas");
 
@@ -87,7 +97,8 @@ int main(int argc, char* argv[]) {
             ("host", "Host for the web server", cxxopts::value<std::string>()->default_value("localhost"))
             ("port", "Port for the web server", cxxopts::value<int>()->default_value("8080"))
             ("version", "Print version information")
-            ("h,help", "Print usage");
+            ("h,help", "Print usage")
+            ("console", "Keep console window open");
 
     options.allow_unrecognised_options();
 
@@ -112,6 +123,7 @@ int main(int argc, char* argv[]) {
     if (result.count("version")) {
         std::cout << "Grafter version: " << MAJOR_VERSION << "." << MINOR_VERSION << "." << PATCH_VERSION << std::endl;
         std::cout << "SymEngine version: " << SYMENGINE_VERSION << std::endl;
+        std::cout << "Opencv version: " << CV_VERSION << std::endl;
     }
     DeviceInfo device = {DeviceType::CPU, 0};
 
@@ -134,28 +146,16 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    bool verbose = result.count("verbose") > 0;
+
     if (result.count("serve")) {
         const string host = result["host"].as<string>();
         const int port = result["port"].as<int>();
-        startServer(host, port, device);
+        startServer(host, port, device, verbose);
         return 0;
     }
 
 
-
-#if defined(_WIN32) || defined(_WIN64)
-
-    DWORD parentPID = GetParentProcessID();
-
-    printf("Parent PID: %lu\n", parentPID);
-    if (parentPID == 0 || parentPID == 4) // 4는 System 프로세스
-    {
-        HWND hWnd = GetConsoleWindow();
-        if (hWnd)
-            ShowWindow(hWnd, SW_HIDE); // 콘솔 숨기기
-    }
-
-#endif
 
     char exePath[MAX_PATH];
     GetModuleFileNameA(NULL, exePath, MAX_PATH);
@@ -184,13 +184,16 @@ int main(int argc, char* argv[]) {
     });
 
 
-    HWND hwnd = reinterpret_cast<HWND>(w.window().value());
+    HWND hwnd = static_cast<HWND>(w.window().value());
 
-    HICON hIcon = static_cast<HICON>(LoadImageW(
-        NULL,
-        L"grafter.ico",              // 아이콘 파일 경로
+
+    string icoPath = exeDir + "/grafter.ico";
+    cout << icoPath << endl;
+    auto hIcon = static_cast<HICON>(LoadImageW(
+        nullptr,
+        std::wstring(icoPath.begin(), icoPath.end()).c_str(),
         IMAGE_ICON,
-        32, 32,                  // 아이콘 크기
+        32, 32,
         LR_LOADFROMFILE
     ));
 
@@ -199,7 +202,7 @@ int main(int argc, char* argv[]) {
         SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
     }
 
-
+    cout << "Loading webview from: file:///" << exeDir + "/index.html" << endl;
     w.navigate("file:///" + exeDir + "/index.html");
     w.run();
 }

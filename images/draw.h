@@ -4,9 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <iostream>
-#include <cmath>
 
 
 struct MatInfo {
@@ -18,7 +16,6 @@ struct MatInfo {
     double y_max;
     MatInfo(int width, int height, double x_min, double x_max, double y_min, double y_max)
             : width(width), height(height), x_min(x_min), x_max(x_max), y_min(y_min), y_max(y_max) {}
-
 };
 
 string MatInfoString(const MatInfo& mat) {
@@ -82,8 +79,6 @@ void plotAxis(
                 cv::Point(axis_y_width, 0),
                 cv::Point(axis_y_width, height),
                 cv::Scalar(0, 0, 0, 255), 1);
-
-
 }
 
 

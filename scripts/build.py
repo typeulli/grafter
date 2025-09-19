@@ -25,14 +25,23 @@ if path_build.exists():
 path_build.mkdir(parents=True, exist_ok=True)
 
 files_grafter: list[Path] = []
-for pattern in ("*.exe", "*.exp", "*.lib", "*.dll", "*.html", "*.js"):
+for pattern in ("*.exe", "*.exp", "*.lib", "*.dll", "*.html", "*.js", "*.ico"):
     for file in path_build_grafter.glob(pattern):
         try:
             shutil.copy2(file, path_build / file.name)
             files_grafter.append(file)
-            print(f"Copied {file}")
+            print(file.relative_to(path_build_grafter), end=", ")
         except Exception as e:
             print(f"Could not copy {file}: {e}")
+print()
+
+try:
+    from os import system
+    path_index_html = path_build / "index.html"
+    system(f"html-minifier-terser --collapse-whitespace --remove-comments --minify-js true --minify-css true -o {path_index_html} {path_index_html}")
+except Exception as e:
+    print(f"Could not minify index.html: {e}")
+    input("Press Enter to continue...")
 
 nsi = """
 !define MUI_ICON "{path_ico}"      ; Icon for the program (16x16 ~ 256x256 pixels)
@@ -106,7 +115,7 @@ Function configPage
         Abort
     ${{EndIf}}
 
-    ${{NSD_CreateLabel}} 0 0 100% 12u "Hello, welcome to nsDialogs!"
+    ${{NSD_CreateLabel}} 0 0 100% 12u "Grafter Installation Options"
     Pop $0
 
     ${{NSD_CreateCheckbox}} 0u 12u 100% 12u "Install Grafter"
@@ -116,7 +125,7 @@ Function configPage
     
 
 
-    ${{NSD_CreateCheckbox}} 12u 36u 100% 12u "Add Desktop shortcut"
+    ${{NSD_CreateCheckbox}} 12u 24u 100% 12u "Add Desktop shortcut"
     Pop $HWND_DESKTOPSHORTCUT
     ${{NSD_OnClick}} $HWND_DESKTOPSHORTCUT onAddDesktopShortClick
     ${{If}} $__VAR_INITIALIZED != 1
@@ -125,7 +134,7 @@ Function configPage
     ${{NSD_SetState}} $HWND_DESKTOPSHORTCUT $DESKTOPSHORTCUT
 
 
-    ${{NSD_CreateCheckbox}} 12u 48u 100% 12u "Add Start Menu shortcut"
+    ${{NSD_CreateCheckbox}} 12u 36u 100% 12u "Add Start Menu shortcut"
     Pop $HWND_STARTMENUSHORTCUT
     ${{NSD_OnClick}} $HWND_STARTMENUSHORTCUT onAddStartMenuShortClick
     ${{If}} $__VAR_INITIALIZED != 1
@@ -134,7 +143,7 @@ Function configPage
     ${{NSD_SetState}} $HWND_STARTMENUSHORTCUT $STARTMENUSHORTCUT
 
     
-    ${{NSD_CreateCheckbox}} 0u 64u 100% 12u "Add grafter to system PATH"
+    ${{NSD_CreateCheckbox}} 0u 48u 100% 12u "Add grafter to system PATH"
     Pop $HWND_ADDTOPATH
     ${{NSD_OnClick}} $HWND_ADDTOPATH onAddToPathClick
     ${{If}} $__VAR_INITIALIZED != 1
@@ -215,7 +224,6 @@ nsi = re.sub(r'[\u3131-\uD79D]+', '', nsi)
 path_nsi = path_build / "grafter.nsi"
 path_nsi.write_text(nsi, encoding="utf-8")
 
-print(nsi)
 
 os.system(f"\"C:\\Program Files (x86)\\NSIS\\makensis.exe\" {path_nsi}")
 

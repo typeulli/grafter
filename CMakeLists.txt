@@ -67,7 +67,7 @@ add_executable(Grafter ${WIN32_RESOURCES} kernel.cu
         server/server.h
         server/httplib.h
         utils/device/device.h
-        server/assets.h
+        utils/assets.h
         calculate/commands/draw/implicit.h
         utils/parsers/jsonParser.h
         gui/wingui.h

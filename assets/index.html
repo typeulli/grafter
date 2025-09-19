@@ -2,67 +2,245 @@
 <html style="width: 100%; height: 100%;">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
     <title>Grafter</title>
     <link rel="icon" type="image/x-icon" href="grafter.ico">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <script async src="sortable.min.js" onload="window.Sortable.create(document.getElementById('graphs'),{ animation: 150, draggable: 'div'})"></script>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script async src="sortable.min.js" onload="window.Sortable && window.Sortable.create(document.getElementById('section-graph'), { animation: 150, draggable: '.sidebar-graph-contents' })"></script>
+    
     <style>
         * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
         }
 
-        .title {
-            color: #222;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
+        body {
+            width: 100dvw;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
         }
 
         .sidebar {
-            max-height: 100%;
+            width: 360px;
+            height: 100%;
+            padding: 20px;
+            border-right: 1px solid #eee;
             display: flex;
             flex-direction: column;
-            border: solid 1px;
-            border-color: #eee;
-            gap: 10px;
-            padding: 20px;
-            overflow-y: auto;
+            gap: 30px;
         }
 
-        .running-options-selections {
+        .sidebar-section {
             display: flex;
-            padding: 8px 10px;
-            align-items: center;
-            gap: 5px;
-            align-self: stretch;
-            color: #222;
-            font-family: Pretendard;
-            font-size: 12px;
-            font-style: normal;
-            font-weight: 400;
-            line-height: normal;
-            border-radius: 8px;
-            border: 1px solid #EEE;
-            background: #FFF;
-            margin-left: 10px;
-            margin-right: 10px;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .scale-options-div {
-            width: 260px; 
-            height: 28px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            margin-left: 10px;
-            margin-right: 10px;
+        .sidebar-section-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
         }
+
+        .sidebar-section-header p {
+            flex: 1;
+        }
+
+        .sidebar label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .sidebar p {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar-selector-row {
+            display: flex;
+            flex-direction: row;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sidebar-selector-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+
+        .sidebar-selector select {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+        }
+
+        .sidebar-scale-option {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            flex-wrap: nowrap;
+        }
+
+        .sidebar-scale-option label {
+            font-size: 14px;
+            font-weight: 500;
+            width: 64px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-scale-option input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .sidebar-scale-option span {
+            flex-shrink: 0;
+        }
+
+        .sidebar-graph-contents {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-graph-contents input[type="color"] {
+            width: 25px;
+            height: 30px;
+            border: none;
+            background-color: transparent;
+        }
+
+        .sidebar-graph-contents input[type="text"] {
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+        }
+        
+        .icon-btn {
+            background-color: transparent;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .graph {
+            flex-grow: 1;
+        }
+
+        #outputImage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        #submitButton {
+            width: 100%;
+            height: 34px; border-radius: 8px; background-color: black;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+
+            body {
+                flex-direction:column-reverse;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border: none;
+                max-height: 50%;
+                overflow-y: auto;
+                border-top: 1px solid #eee;
+            }
+        }
+
+        
     </style>
 </head>
 
-<body style="display: flex; width: 100%; height: 100%; padding: 0px;">
+<body>
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-selector-col sidebar-selector">
+                <label for="device-selection">Running Options</label>
+                <select id="device-selection"></select>
+            </div>
+            
+            <div class="sidebar-selector-col sidebar-selector">
+                <label for="graph-type-selection">Graph Type</label>
+                <select id="graph-type-selection">
+                    <option value="real+rect">real / rect</option>
+                    <option value="real+polar">real / polar</option>
+                </select>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <p>Scale Options</p>
+            <div class="sidebar-scale-option">
+                <label for="scale-option-size-x-input">Size:</label>
+                <input id="scale-option-size-x-input" value="1200" />
+                <span>x</span>
+                <input id="scale-option-size-y-input" value="1200" />
+            </div>
+            <div class="sidebar-scale-option">
+                <label for="scale-option-x-range-min-input">X Range:</label>
+                <input id="scale-option-x-range-min-input" value="-10" />
+                <span>~</span>
+                <input id="scale-option-x-range-max-input" value="10" />
+            </div>
+            <div class="sidebar-scale-option">
+                <label for="scale-option-y-range-min-input">Y Range:</label>
+                <input id="scale-option-y-range-min-input" value="-10" />
+                <span>~</span>
+                <input id="scale-option-y-range-max-input" value="10" />
+            </div>
+        </div>
+
+        <div id="section-graph" class="sidebar-section">
+            <div class="sidebar-section-header">
+                <p>Graphs</p>
+                <button class="icon-btn" onclick="addGraphInput()">
+                    <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 6H10" stroke="#999"/>
+                        <path d="M6 2V10" stroke="#999"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <button id="submitButton" onclick="submit()">Apply</button>
+        </div>
+    </div>
+    <div class="graph">
+        <img id="outputImage" src="" alt="Output will appear here"/>
+    </div>
+
     <script>
         async function API_getGrafterDevices() {
             if (window.__bind_getGrafterDevices) {
@@ -70,13 +248,6 @@
             }
             const response = await fetch("/devices");
             return await response.json();
-        }
-
-        async function API_showConfirm(message) {
-            return new Promise((resolve) => {
-                const confirm = window.confirm(message);
-                resolve(confirm);
-            });
         }
 
         async function API_callGrafter(body) {
@@ -108,7 +279,7 @@
         async function selectGrafterPath() {
 
             var devices = await API_getGrafterDevices();
-            document.getElementById('grafterDeviceSelect').innerHTML = '';
+            document.getElementById("device-selection").innerHTML = '';
             for (const [category, deviceList] of Object.entries(devices)) {
                 const optGroup = document.createElement('optgroup');
                 optGroup.label = category;
@@ -118,7 +289,7 @@
                     option.textContent = description;
                     optGroup.appendChild(option);
                 });
-                document.getElementById('grafterDeviceSelect').appendChild(optGroup);
+                document.getElementById("device-selection").appendChild(optGroup);
             }
             
         }
@@ -130,9 +301,10 @@
             selectGrafterPath();
         }
         window.addGraphInput = () => {
-            const graphsDiv = document.getElementById('graphs');
+            const graphsDiv = document.getElementById("section-graph");
             
             const inputDiv = document.createElement('div');
+            inputDiv.classList.add('sidebar-graph-contents');
             inputDiv.style.display = 'flex';
             inputDiv.style.flexDirection = 'row';
             inputDiv.style.alignItems = 'center';
@@ -149,30 +321,17 @@
 
             const graphColor = document.createElement('input');
             graphColor.type = 'color';
-            graphColor.value = '#8800FF';
-            graphColor.style.width = '30px';
-            graphColor.style.height = '30px';
-            graphColor.style.border = 'none';
-            graphColor.style.borderRadius = '50%';
-            graphColor.style.padding = '0';
-            graphColor.style.overflow = 'hidden';
             inputDiv.appendChild(graphColor);
 
             const inputField = document.createElement('input');
             inputField.type = 'text';
-            inputField.placeholder = 'Enter graph formula';
-            inputField.style.height = 'fit-content';
-            inputField.style.flexGrow = '1';
-            inputField.style.borderRadius = '8px';
-            inputField.style.padding = '10px 8px';
-            inputField.style.border = '1px solid #ccc';
             inputDiv.appendChild(inputField);
 
+
             const removeButton = document.createElement('div');
-            removeButton.style.cursor = 'pointer';
-            removeButton.style.marginLeft = 'auto';
+            removeButton.classList.add('icon-btn');
             removeButton.onclick = () => graphsDiv.removeChild(inputDiv);
-            
+
             const removeButtonIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             removeButtonIcon.style.width = "16px";
             removeButtonIcon.style.height = "16px";
@@ -194,22 +353,23 @@
             
             inputDiv.appendChild(removeButton);
 
-            graphsDiv.insertBefore(inputDiv, graphsDiv.lastElementChild);
+            graphsDiv.appendChild(inputDiv);
         }
         async function submit() {
-            const x_min = parseInt(document.getElementById('xMinInput').value);
-            const x_max = parseInt(document.getElementById('xMaxInput').value);
-            const y_min = parseInt(document.getElementById('yMinInput').value);
-            const y_max = parseInt(document.getElementById('yMaxInput').value);
+            const x_min = parseInt(document.getElementById('scale-option-x-range-min-input').value);
+            const x_max = parseInt(document.getElementById('scale-option-x-range-max-input').value);
+            const y_min = parseInt(document.getElementById('scale-option-y-range-min-input').value);
+            const y_max = parseInt(document.getElementById('scale-option-y-range-max-input').value);
+            const [dtype, coord] = document.getElementById('graph-type-selection').value.split("+");
             const filePath = await API_callGrafter(
                 {
-                    "device": document.getElementById('grafterDeviceSelect').value.split("/")[0],
-                    "dtype": "real",
-                    "coord": document.getElementById('graphTypeSelect').value,
+                    "device": document.getElementById('device-selection').value.split("/")[0],
+                    "dtype": dtype,
+                    "coord": coord,
                     "mats": [
                         {
-                            "width": parseInt(document.getElementById('widthInput').value),
-                            "height": parseInt(document.getElementById('heightInput').value),
+                            "width": parseInt(document.getElementById('scale-option-size-x-input').value),
+                            "height": parseInt(document.getElementById('scale-option-size-y-input').value),
                             "x_min": x_min, "x_max": x_max, "y_min": y_min, "y_max": y_max
                         }
                     ],
@@ -226,7 +386,7 @@
                             "cnt": 2000
                         }
                     ],
-                    "graph": Array.from(document.querySelectorAll('#graphs > div'))
+                    "graph": Array.from(document.getElementsByClassName("sidebar-graph-contents"))
                         .map(div => {
                             const input = div.querySelector('input[type="text"]');
                             const isGraph = div.querySelector('input[type="checkbox"]').checked;
@@ -260,59 +420,5 @@
             };
         }
     </script>
-
-    <div class="sidebar">
-
-        <p class="title">Running Options</p>
-        <select class="running-options-selections" id="grafterDeviceSelect" ></select>
-        <p class="title">Scale Options</p>
-        <div id="mats" style="display: flex; flex-direction: column;">
-            <div class="scale-options-div">
-                <label style="width: 54px; font-size: 13px;">Size:</label>
-                <input type="number" id="widthInput" value="1200" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 3L9 9" stroke="black"/>
-                    <path d="M9 3L3 9" stroke="black"/>
-                </svg>
-                <input type="number" id="heightInput" value="1200" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-            </div>
-            <div class="scale-options-div">
-                <label style="width: 54px; font-size: 13px;">X Range: </label>
-                <input type="number" id="xMinInput" value="-10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.5 6.5L3 6C3.82843 5.17157 5.17157 5.17157 6 6V6V6C6.82843 6.82843 8.17157 6.82843 9 6L9.5 5.5" stroke="black" stroke-linecap="round"/>
-                </svg>
-                <input type="number" id="xMaxInput" value="10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-            </div>
-            <div class="scale-options-div">
-                <label style="width: 54px; font-size: 13px;">Y Range: </label>
-                <input type="number" id="yMinInput" value="-10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.5 6.5L3 6C3.82843 5.17157 5.17157 5.17157 6 6V6V6C6.82843 6.82843 8.17157 6.82843 9 6L9.5 5.5" stroke="black" stroke-linecap="round"/>
-                </svg>
-                <input type="number" id="yMaxInput" value="10" style="width: 77px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-            </div>
-            <div style="display: flex; width: 260px; height: 28px; align-items: center; gap: 8px;">
-                <p>Graph Type:</p>
-                <select id="graphTypeSelect" style="border: 1px solid #ddd; border-radius: 8px; padding: 4px;">
-                    <option value="rect">rect</option>
-                    <option value="polar">polar</option>
-                </select>
-            </div>
-        </div>
-        <div style="display: flex; align-items: center;">
-            <p style="margin: 0px;">Graphs</p>         
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: auto;" onclick="addGraphInput()">
-                <path d="M2 6H10" stroke="black"/>
-                <path d="M6 2V10" stroke="black"/>
-            </svg>
-        </div>
-        <div id="graphs" style="display: flex; flex-direction: column;"></div>
-        <button id="submitButton" style="width: 100%; height: 34px; border-radius: 8px; background-color: black; color: white;" onclick="submit()">Apply</button>
-    </div>
-
-    <div style="flex-grow: 1;">
-        <img id="outputImage" src="" alt="Output will appear here" style="display:none; width: 100%; height: 100%;" />
-    </div>
 </body>
 </html>

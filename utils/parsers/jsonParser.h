@@ -142,12 +142,13 @@ JsonConfig parseJsonConfig(const string& jsonString, DeviceInfo defaultDevice={D
     };;
 }
 
-vector<cv::Mat> runJsonString(const string& jsonString, DeviceInfo defaultDevice) {
+vector<cv::Mat> runJsonString(const string& jsonString, DeviceInfo defaultDevice, bool verbose=false) {
     JsonConfig config = parseJsonConfig(jsonString, defaultDevice);
-    return config.graph.execute(config.device, false);
+    printf(config.graph.summary().c_str());
+    return config.graph.execute(config.device, verbose);
 }
-extern "C" void* extern_runJsonString(const char* jsonString, DeviceInfo defaultDevice) {
-    return new vector<cv::Mat>(runJsonString(string(jsonString), defaultDevice));
+extern "C" void* extern_runJsonString(const char* jsonString, DeviceInfo defaultDevice, bool verbose=false) {
+    return new vector<cv::Mat>(runJsonString(string(jsonString), defaultDevice, verbose));
 }
 
 #endif //GRAFTER_JSONPARSER_H

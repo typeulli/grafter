@@ -5,7 +5,7 @@
 #include "httplib.h"
 
 #include <opencv2/opencv.hpp>
-#include "assets.h"
+#include "../utils/assets.h"
 
 
 void mount(httplib::Server &server, const string &mount_point, const string &filepath, const string &content_type) {
@@ -18,7 +18,7 @@ void mount(httplib::Server &server, const string &mount_point, const string &fil
 }
 
 
-extern bool startServer(const string& host, int port, DeviceInfo device_default) {
+extern bool startServer(const string& host, int port, DeviceInfo device_default, bool verbose=false) {
     httplib::Server svr;
 
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
@@ -32,7 +32,7 @@ extern bool startServer(const string& host, int port, DeviceInfo device_default)
     mount(svr, "/sortable.min.js", "sortable.min.js", "application/javascript");
 
 
-    std::ifstream file_ico("grafter.ico", std::ios::binary);
+    std::ifstream file_ico(getAssetPath("grafter.ico"), std::ios::binary);
     if (file_ico.is_open()) {
         std::ostringstream buffer;
         buffer << file_ico.rdbuf();
@@ -53,7 +53,7 @@ extern bool startServer(const string& host, int port, DeviceInfo device_default)
         res.set_content(dataDeviceJson, "application/json");
     });
 
-    svr.Post("/draw", [device_default](const httplib::Request& req, httplib::Response& res) {
+    svr.Post("/draw", [device_default, verbose](const httplib::Request& req, httplib::Response& res) {
 
         try {
 
@@ -61,8 +61,7 @@ extern bool startServer(const string& host, int port, DeviceInfo device_default)
             string body = req.body;
             vector<cv::Mat> mats;
             try {
-                mats = runJsonString(body, device_default);
-
+                mats = runJsonString(body, device_default, verbose);
             }
             catch (const std::exception& e) {
                 res.status = 400;
