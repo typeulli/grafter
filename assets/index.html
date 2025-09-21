@@ -328,9 +328,56 @@
             inputDiv.appendChild(inputField);
 
 
+            const visibleButton = document.createElement('div');
+            visibleButton.classList.add('icon-btn', "visible-btn");
+            visibleButton.onclick = () => {
+                if (visibleButtonIcon_visible.style.display === 'none') {
+                    visibleButtonIcon_visible.style.display = 'block';
+                    visibleButtonIcon_hidden.style.display = 'none';
+                } else {
+                    visibleButtonIcon_visible.style.display = 'none';
+                    visibleButtonIcon_hidden.style.display = 'block';
+                }
+            };
+
+            const visibleButtonIcon_visible = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            visibleButtonIcon_visible.style.width = "16px";
+            visibleButtonIcon_visible.style.height = "16px";
+            visibleButtonIcon_visible.setAttribute("viewBox", "0 0 12 12");
+            visibleButtonIcon_visible.style.fill = "none";
+            visibleButtonIcon_visible.innerHTML = `
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 3C3.14286 3 1 4.8 1 6C1 7.2 3.14286 9 6 9C8.85714 9 11 7.2 11 6C11 4.8 8.85714 3 6 3Z" stroke="#222222" stroke-linecap="round"/>
+<circle cx="6" cy="6" r="1.5" fill="#222222"/>
+</svg>
+`
+
+            const visibleButtonIcon_hidden = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            visibleButtonIcon_hidden.style.width = "16px";
+            visibleButtonIcon_hidden.style.height = "16px";
+            visibleButtonIcon_hidden.setAttribute("viewBox", "0 0 12 12");
+            visibleButtonIcon_hidden.style.fill = "none";
+            visibleButtonIcon_hidden.style.display = 'none';
+            visibleButtonIcon_hidden.innerHTML = `
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="12" height="12" fill="white"/>
+<path d="M6 3C3.14286 3 1 4.8 1 6C1 7.2 3.14286 9 6 9C8.85714 9 11 7.2 11 6C11 4.8 8.85714 3 6 3Z" stroke="#999999" stroke-linecap="round"/>
+<circle cx="6" cy="6" r="1.5" fill="#999999"/>
+<path d="M2 9L10 3" stroke="#999999" stroke-linecap="round"/>
+</svg>
+`
+            
+            visibleButton.appendChild(visibleButtonIcon_visible);
+            visibleButton.appendChild(visibleButtonIcon_hidden);
+            inputDiv.appendChild(visibleButton);
+
+
+            
+            
             const removeButton = document.createElement('div');
             removeButton.classList.add('icon-btn');
             removeButton.onclick = () => graphsDiv.removeChild(inputDiv);
+
 
             const removeButtonIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             removeButtonIcon.style.width = "16px";
@@ -387,6 +434,11 @@
                         }
                     ],
                     "graph": Array.from(document.getElementsByClassName("sidebar-graph-contents"))
+                        .filter(div => {
+                            const input = div.getElementsByClassName("visible-btn")[0];
+                            const svg_visible = input.getElementsByTagName("svg")[0];
+                            return svg_visible.style.display !== 'none';
+                        })
                         .map(div => {
                             const input = div.querySelector('input[type="text"]');
                             const isGraph = div.querySelector('input[type="checkbox"]').checked;

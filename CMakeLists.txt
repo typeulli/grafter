@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.21...3.29)
+
+
+
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -allow-unsupported-compiler")
 project(Grafter LANGUAGES CXX CUDA)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -march=native -flto")
+endif()
+
 
 set(CMAKE_CUDA_STANDARD 20)
 
