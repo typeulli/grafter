@@ -93,7 +93,6 @@ target_link_libraries(Grafter PRIVATE webview::core)
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 target_link_libraries(Grafter PRIVATE ${OpenCV_LIBS})
-#target_include_directories(Grafter PRIVATE ${OpenCV_INCLUDE_DIRS})
 
 target_link_libraries(Grafter PRIVATE webview::core_static)
 
@@ -111,3 +110,9 @@ add_custom_target(copy_assets ALL
         COMMENT "Copying assets folder..."
 )
 add_dependencies(Grafter copy_assets)
+
+add_custom_command(
+        TARGET Grafter POST_BUILD
+        COMMAND html-minifier-terser --collapse-whitespace --remove-comments --minify-js true --minify-css true -o index.html index.html
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)

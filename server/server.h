@@ -18,7 +18,7 @@ void mount(httplib::Server &server, const string &mount_point, const string &fil
 }
 
 
-extern bool startServer(const string& host, int port, DeviceInfo device_default, bool verbose=false) {
+extern bool startServer(const string& host, uchar port, DeviceInfo device_default, bool verbose=false) {
     httplib::Server svr;
 
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
@@ -30,7 +30,7 @@ extern bool startServer(const string& host, int port, DeviceInfo device_default,
 
     mount(svr, "/", "index.html", "text/html");
     mount(svr, "/sortable.min.js", "sortable.min.js", "application/javascript");
-
+    mount(svr, "/mathlive.min.js", "mathlive.min.js", "application/javascript");
 
     std::ifstream file_ico(getAssetPath("grafter.ico"), std::ios::binary);
     if (file_ico.is_open()) {

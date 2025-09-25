@@ -102,7 +102,7 @@ int handleCLI(int argc, char* argv[]) {
 
     if (result.count("serve")) {
         const string host = result["host"].as<string>();
-        const int port = result["port"].as<int>();
+        const uchar port = result["port"].as<uchar>();
         startServer(host, port, device);
         return 0;
     }
