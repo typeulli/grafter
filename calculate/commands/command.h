@@ -2,6 +2,9 @@
 #define COMMAND_H
 
 
+#include <thrust/device_ptr.h>
+#include <thrust/fill.h>
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -9,7 +12,6 @@
 
 #include "device.h"
 #include "../scaler.h"
-#include "../utils/utils.h"
 #include "../images/draw.h"
 
 using std::string;
@@ -60,6 +62,14 @@ public:
     }
 };
 
+#define IMPLEMENT_CUDA_SYNCRONIZE(name)\
+    cudaError_t err = cudaGetLastError();\
+    if (err != cudaSuccess) {\
+        std::cerr << "CUDA error in " << name << ": " << cudaGetErrorString(err) << std::endl;\
+        return false;\
+    }\
+    cudaDeviceSynchronize();
+
 
 #define IMPLEMENT_CUDA_FULL_COMMAND(__fn, name)\
     bool runCommandCUDA(vector<double*> space, Scaler* scalers, size_t size_space, size_t size_scalers) override {\
@@ -68,12 +78,7 @@ public:
             return false;\
         }\
         __fn<<<16, 16>>>(space[inA], space[inB], space[out], ref, size_space);\
-        cudaError_t err = cudaGetLastError();\
-        if (err != cudaSuccess) {\
-            std::cerr << "CUDA error in " << name << ": " << cudaGetErrorString(err) << std::endl;\
-            return false;\
-        }\
-        cudaDeviceSynchronize();\
+        IMPLEMENT_CUDA_SYNCRONIZE(name)\
         return true;\
     }
 
@@ -85,12 +90,7 @@ public:
             return false;\
         }\
         __fn<<<16, 16>>>(space[inA], space[out], size_space);\
-        cudaError_t err = cudaGetLastError();\
-        if (err != cudaSuccess) {\
-            std::cerr << "CUDA error in " << name << ": " << cudaGetErrorString(err) << std::endl;\
-            return false;\
-        }\
-        cudaDeviceSynchronize();\
+        IMPLEMENT_CUDA_SYNCRONIZE(name)\
         return true;\
     }
 
@@ -102,12 +102,7 @@ public:
             return false;\
         }\
         __fn<<<16, 16>>>(space[inA], space[inB], space[out], size_space);\
-        cudaError_t err = cudaGetLastError();\
-        if (err != cudaSuccess) {\
-            std::cerr << "CUDA error in " << name << ": " << cudaGetErrorString(err) << std::endl;\
-            return false;\
-        }\
-        cudaDeviceSynchronize();\
+        IMPLEMENT_CUDA_SYNCRONIZE(name)\
         return true;\
     }
 
@@ -120,12 +115,7 @@ public:
             return false;\
         }\
         __fn<<<16, 16>>>(space[inA], ref, space[out], size_space);\
-        cudaError_t err = cudaGetLastError();\
-        if (err != cudaSuccess) {\
-            std::cerr << "CUDA error in " << name << ": " << cudaGetErrorString(err) << std::endl;\
-            return false;\
-        }\
-        cudaDeviceSynchronize();\
+        IMPLEMENT_CUDA_SYNCRONIZE(name)\
         return true;\
     }
 
@@ -226,13 +216,7 @@ public:
 
 
 };
-__global__ void f_constant(double* out, double ref, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
-    uint stride = gridDim.x * blockDim.x;
-    for (size_t i = idx; i < size; i += stride) {
-        out[i] = ref;
-    }
-}
+
 class ConstantCommand : public ExecuteCommand<ConstantCommand> {
 public:
     ConstantCommand(size_t out, double ref) {
@@ -254,13 +238,10 @@ public:
             std::cerr << "Invalid index for SimpleConstantCommand." << std::endl;
             return false;
         }
-        f_constant<<<16, 16>>>(space[out], ref, size_space);
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA error in SimpleConstantCommand: " << cudaGetErrorString(err) << std::endl;
-            return false;
-        }
-        cudaDeviceSynchronize();
+
+        thrust::device_ptr<double> dev_ptr(space[out]);
+        thrust::fill(dev_ptr, dev_ptr + size_space, ref);
+
         return true;
     }
     string exp() const override {

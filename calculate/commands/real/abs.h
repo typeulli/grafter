@@ -4,10 +4,10 @@
 
 #include "command.h"
 __global__ void f_abs(const double* inA, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
-        out[i] = std::abs(inA[i]);
+        out[i] = abs(inA[i]);
     }
 }
 class AbsCommand : public SingleCommand<AbsCommand> {

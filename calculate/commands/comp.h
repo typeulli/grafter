@@ -6,7 +6,7 @@
 #include "command.h"
 
 __global__ void f_eq0_2d(const double* inA, double ref, double* out, size_t size, size_t sizex) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         double cur = inA[i];

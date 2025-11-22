@@ -5,7 +5,7 @@
 
 #define TEMPLATE_TRIGONOMETRIC(fnname, name) \
 __global__ void f_##fnname(const double* inA, double* out, size_t size) { \
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x; \
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x; \
     uint stride = gridDim.x * blockDim.x; \
     for (size_t i = idx; i < size; i += stride) { \
         out[i] = std::fnname(inA[i]); \

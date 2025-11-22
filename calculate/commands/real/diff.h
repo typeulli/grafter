@@ -4,7 +4,7 @@
 #include "command.h"
 
 __global__ void _ediff(const double* inA, const double* inB, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         if (i == 0) {

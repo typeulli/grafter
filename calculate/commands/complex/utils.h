@@ -3,7 +3,7 @@
 
 #include "command.h"
 __global__ void f_magnitude(const double* inA, const double* inB, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         out[i] = sqrt(inA[i] * inA[i] + inB[i] * inB[i]);

@@ -8,7 +8,7 @@ __global__ void f_ln(const double* inA, double* out, size_t size) {
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         if (inA[i] <= 0.0) {
-            out[i] = NAN; // Logarithm of non-positive numbers is undefined
+            out[i] = NAN;
         } else {
             out[i] = std::log(inA[i]);
         }
@@ -25,7 +25,7 @@ public:
         }
         for (size_t i = 0; i < size_space; ++i) {
             if (space[inA][i] <= 0.0) {
-                space[out][i] = NAN; // Logarithm of non-positive numbers is undefined
+                space[out][i] = NAN;
             } else {
                 space[out][i] = std::log(space[inA][i]);
             }
@@ -44,7 +44,7 @@ __global__ void f_log(const double* inA, const double* inB, double* out, size_t 
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         if (inA[i] <= 0.0 || inB[i] <= 0.0) {
-            out[i] = NAN; // Logarithm of non-positive numbers is undefined
+            out[i] = NAN;
         } else {
             out[i] = std::log(inA[i]) / std::log(inB[i]);
         }
@@ -60,7 +60,7 @@ public:
         }
         for (size_t i = 0; i < size_space; ++i) {
             if (space[inA][i] <= 0.0 || space[inB][i] <= 0.0) {
-                space[out][i] = NAN; // Logarithm of non-positive numbers is undefined
+                space[out][i] = NAN;
             } else {
                 space[out][i] = std::log(space[inA][i]) / std::log(space[inB][i]);
             }
@@ -77,11 +77,14 @@ public:
 __global__ void f_log_base_c(double* in, double ref, double* out, size_t size) {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
+
+    double log_ref = std::log(ref);
+
     for (size_t i = idx; i < size; i += stride) {
         if (in[i] <= 0.0 || ref <= 0.0) {
-            out[i] = NAN; // Logarithm of non-positive numbers is undefined
+            out[i] = NAN;
         } else {
-            out[i] = std::log(ref) / std::log(in[i]);
+            out[i] = log_ref / std::log(in[i]);
         }
     }
 }
@@ -93,11 +96,14 @@ public:
             std::cerr << "Invalid indices for LogBaseConstantCommand." << std::endl;
             return false;
         }
+
+        double log_ref = std::log(ref);
+
         for (size_t i = 0; i < size_space; ++i) {
             if (space[inA][i] <= 0.0 || ref <= 0.0) {
-                space[out][i] = NAN; // Logarithm of non-positive numbers is undefined
+                space[out][i] = NAN;
             } else {
-                space[out][i] = std::log(ref) / std::log(space[inA][i]);
+                space[out][i] = log_ref / std::log(space[inA][i]);
             }
         }
         return true;
@@ -110,11 +116,14 @@ public:
 __global__ void f_log_arg_c(double* in, double ref, double* out, size_t size) {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
+
+    double log_ref = std::log(ref);
+
     for (size_t i = idx; i < size; i += stride) {
         if (in[i] <= 0.0 || ref <= 0.0) {
-            out[i] = NAN; // Logarithm of non-positive numbers is undefined
+            out[i] = NAN;
         } else {
-            out[i] = std::log(in[i]) / std::log(ref);
+            out[i] = std::log(in[i]) / log_ref;
         }
     }
 }
@@ -126,11 +135,14 @@ public:
             std::cerr << "Invalid indices for LogArgConstantCommand." << std::endl;
             return false;
         }
+
+        double log_ref = std::log(ref);
+
         for (size_t i = 0; i < size_space; ++i) {
             if (space[inA][i] <= 0.0 || ref <= 0.0) {
-                space[out][i] = NAN; // Logarithm of non-positive numbers is undefined
+                space[out][i] = NAN;
             } else {
-                space[out][i] = std::log(space[inA][i]) / std::log(ref);
+                space[out][i] = std::log(space[inA][i]) / log_ref;
             }
         }
         return true;

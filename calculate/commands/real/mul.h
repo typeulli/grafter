@@ -2,7 +2,7 @@
 #define CALCULATE_REAL_MUL_H
 #include "command.h"
 __global__ void _mul(const double* inA, const double* inB, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         out[i] = inA[i] * inB[i];
@@ -29,7 +29,7 @@ public:
 
 
 __global__ void _mul_c(const double* in, double ref, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         out[i] = in[i] * ref;

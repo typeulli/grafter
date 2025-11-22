@@ -6,7 +6,7 @@
 #include "command.h"
 
 __global__ void f_complex_rgb(const double* inA, const double* inB, double* outR, double* outG, double* outB, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         double real = inA[i];
@@ -101,12 +101,7 @@ public:
         }
         f_complex_rgb<<<16, 16>>>(space[inA], space[inB], space[outR], space[outG], space[outB], size_space);
 
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA error in ComplexRGBCommand: " << cudaGetErrorString(err) << std::endl;
-            return false;
-        }
-        cudaDeviceSynchronize();
+        IMPLEMENT_CUDA_SYNCRONIZE("ComplexRGBCommand")
         return true;
     }
 

@@ -29,7 +29,7 @@ struct DeviceInfo {
     int ref;
 };
 extern DeviceInfo parseDevice(const string& deviceText);
-extern bool startServer(const string& host, int port, DeviceInfo device_default, bool verbose);
+extern bool startServer(const string& host, uint port, DeviceInfo device_default, bool verbose);
 extern "C" void* extern_runJsonString(const char* jsonString, DeviceInfo defaultDevice);
 vector<cv::Mat> runJsonStringWrapper(const string& jsonString, DeviceInfo defaultDevice) {
     return *(vector<cv::Mat>*)extern_runJsonString(jsonString.c_str(), defaultDevice);
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 
     if (result.count("serve")) {
         const string host = result["host"].as<string>();
-        const int port = result["port"].as<int>();
+        const uint port = result["port"].as<int>();
         startServer(host, port, device, verbose);
         return 0;
     }
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
     char exePath[MAX_PATH];
     GetModuleFileNameA(NULL, exePath, MAX_PATH);
     std::string exeDir = std::string(exePath);
-    exeDir = exeDir.substr(0, exeDir.find_last_of("\\/")); // exe 폴더
+    exeDir = exeDir.substr(0, exeDir.find_last_of("\\/"));
 
 
     webview::webview w(true, nullptr);

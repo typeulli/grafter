@@ -18,7 +18,7 @@ void mount(httplib::Server &server, const string &mount_point, const string &fil
 }
 
 
-extern bool startServer(const string& host, uchar port, DeviceInfo device_default, bool verbose=false) {
+extern bool startServer(const string& host, uint port, DeviceInfo device_default, bool verbose=false) {
     httplib::Server svr;
 
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
@@ -108,7 +108,7 @@ extern bool startServer(const string& host, uchar port, DeviceInfo device_defaul
         std::cout << std::endl;
     });
 
-    std::cout << "Starting server at http://" << host << ":" << port << std::endl;
+    printf("Server started at http://%s:%d\n", host.c_str(), port);
     svr.listen(host, port);
     return true;
 }

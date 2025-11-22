@@ -6,7 +6,7 @@
 using json = nlohmann::json;
 
 struct JsonConfig {
-    DeviceInfo device;
+    DeviceInfo device{};
     Graph graph;
 };
 

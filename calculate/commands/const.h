@@ -7,7 +7,7 @@
 
 
 __global__ void _var(double* out, Scaler* scalers, size_t ref, ull size_space) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     uint stride = gridDim.x * blockDim.x;
 
 
@@ -59,12 +59,7 @@ public:
         const size_t dim = this->inA;
         _var<<<16, 16>>>(space[out], scalers, dim, size_space);
 
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA error in VarCommand: " << cudaGetErrorString(err) << std::endl;
-            return false;
-        }
-        cudaDeviceSynchronize();
+        IMPLEMENT_CUDA_SYNCRONIZE("VarCommand")
         return true;
     }
 

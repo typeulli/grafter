@@ -4,8 +4,8 @@
 #include "command.h"
 
 __global__ void f_floor(const double* inA, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int stride = gridDim.x * blockDim.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         out[i] = floor(inA[i]);
     }
@@ -30,8 +30,8 @@ public:
 };
 
 __global__ void f_ceil(const double* inA, double* out, size_t size) {
-    size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int stride = gridDim.x * blockDim.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint stride = gridDim.x * blockDim.x;
     for (size_t i = idx; i < size; i += stride) {
         out[i] = ceil(inA[i]);
     }

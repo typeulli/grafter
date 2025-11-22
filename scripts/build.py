@@ -4,11 +4,11 @@ import re
 import os
 path_here = Path(__file__).parent
 
-build_target = input("Enter the build target (default: cmake-build-release): ")
+build_target = input("Enter the build target (default: cmake-build-release-visual-studio): ")
 
 path_assets = path_here.parent / "assets"
 
-path_build_grafter = path_here.parent / (build_target if build_target else "cmake-build-release")
+path_build_grafter = path_here.parent / (build_target if build_target else "cmake-build-release-visual-studio")
 if not path_build_grafter.exists():
     print(f"Build target '{path_build_grafter}' does not exist.")
     exit(1)

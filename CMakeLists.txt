@@ -78,8 +78,9 @@ add_executable(Grafter ${WIN32_RESOURCES} kernel.cu
         utils/assets.h
         calculate/commands/draw/implicit.h
         utils/parsers/jsonParser.h
-        gui/wingui.h
         main.cpp
+        calculate/commands/draw/implicitAutoFill.h
+        kernel.cu
 )
 
 set_target_properties(Grafter PROPERTIES OUTPUT_NAME "grafter")
